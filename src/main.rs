@@ -3,9 +3,10 @@ extern crate gl;
 
 use glfw::{Action, Context, Key};
 use std::{os::raw::*, mem};
-// use cgmath::{Vector3, Matrix4};
 
 mod shader;
+mod vao;
+mod vbo;
 
 // struct Camera {
 //     pitch: f32,
@@ -38,24 +39,17 @@ fn main() {
     gl::load_with(|s| glfw.get_proc_address_raw(s));
     gl::Viewport::load_with(|s| glfw.get_proc_address_raw(s));
 
-    let vertices = [
+    let vertices = vec![
         -0.5f32, -0.5f32, 0.0f32, 1.0f32, 0.0f32, 0.0f32,
          0.5f32, -0.5f32, 0.0f32, 0.0f32, 1.0f32, 0.0f32,
          0.0f32,  0.5f32, 0.0f32, 0.0f32, 0.0f32, 1.0f32,
     ];
 
-    let mut vao: u32 = 0;
-    unsafe {
-        gl::GenVertexArrays(1, &mut vao);
-        gl::BindVertexArray(vao);
-    }
+    let vao = vao::VAO::new();
+    vao.bind();
 
-    let mut vbo: u32 = 0;
-    unsafe {
-        gl::CreateBuffers(1, &mut vbo);
-        gl::BindBuffer(gl::ARRAY_BUFFER, vbo);
-        gl::BufferData(gl::ARRAY_BUFFER, (vertices.len() * mem::size_of::<gl::types::GLfloat>()) as isize, &vertices[0] as *const f32 as *const c_void, gl::STATIC_DRAW);
-    }
+    let vbo = vbo::VBO::new(vertices);
+    vbo.bind();
 
     let mut sh = shader::Shader::new("shader/vertex.glsl".to_string(), "shader/fragment.glsl".to_string());
     sh.bind();
